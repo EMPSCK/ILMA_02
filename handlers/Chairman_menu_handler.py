@@ -198,7 +198,7 @@ async def cmd_judes(message: Message, state:FSMContext):
         if active_compId_chairman != 0:
             is_active = await general_queries.active_or_not(active_compId_chairman)
             if is_active == 1:
-                await chairman_queries.update_zgs(active_compId_chairman)
+                #await chairman_queries.update_zgs(active_compId_chairman)
                 await message.answer('Отправьте список в формате: Судья№1, Судья№2, ..., Судья№n.',
                                      reply_markup=chairmans_kb.load_judges_kb)
                 await state.set_state(Load_list_judges.next_step)
@@ -569,7 +569,7 @@ async def cmd_start(message: Message, state: FSMContext):
         if active_or_not == 0:
             return await message.answer('❌Ошибка. Соревнование неактивно.')
 
-        await chairman_queries.clear_zgs(active_comp)
+        #await chairman_queries.clear_zgs(active_comp)
         msg = await message.answer('Введите необходимое количество згс:')
         generation_zgs_results[message.from_user.id] = {'en_msg': msg}
         await state.set_state(Gen_zgs_states.firstState)
