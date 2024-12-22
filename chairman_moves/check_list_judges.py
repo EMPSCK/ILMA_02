@@ -3,12 +3,14 @@ import sqlite3
 from itertools import combinations
 from queries import general_queries
 from queries import chairman_queries
+from queries import chairman_queries_02
 import config
 import pymysql
 
 
 async def check_list(text, user_id):
     try:
+        areas_01 = []
         s = ''
         list_for_group_counter = []
         flag1, flag2, flag3, flag4, flag5, flag6, flag7, flag8 = 0, 0, 0, 0, 0, 0, 0, 0
@@ -46,12 +48,13 @@ async def check_list(text, user_id):
                 familylinjud = [i.split()[0] for i in linjud]
                 otherjud = re.split(',\s{0,}', ', '.join(
                     [area[i] for i in range(len(area)) if i != 0 and area[i] != '' and i != len(area) - 1]))
+                area_01 = area.copy()
                 area = area[0]
+                areas_01.append([area, area_01])
                 #group_num = re.search('Гр.\s{0,}\d+', area)
                 group_num = re.search('\d+.', area[0:5].strip())
                 if group_num is not None:
                     group_num = int(group_num[0].replace('.', '').strip())
-
                     k7 = await chairman_queries.check_min_category(otherjud, linjud, group_num, active_comp, area)
                     if k7 != 1:
                         flag7 = 1
@@ -141,6 +144,13 @@ async def check_list(text, user_id):
 
         config.judges_index[user_id] = judges_use
         if flag1 + flag2 + flag3 + flag4 + flag5 + flag6 + flag7 + flag8 == 0:
+            for data in areas_01:
+
+                # Новая логика для двух таблиц
+                crew_id = await chairman_queries_02.pull_to_crew_group(user_id, group_num, data[0])
+                if crew_id != -1:
+                    await chairman_queries_02.pull_to_comp_group_jud(user_id, crew_id, data[1])
+
             return (1, s, list_for_group_counter)
         else:
             return (0, s, list_for_group_counter)
@@ -265,12 +275,14 @@ async def get_parse(text, user_id):
 
                 st1 = cur.fetchall()
                 if len(st1) == 1:
+                    #Заменить регуляркой
                     text = text.replace(lastname + ' ' + firstname, st1[0]['lastName'] + ' ' + st1[0]['firstName'])
                     continue
 
                 st1 = cur.execute( f"SELECT firstName, lastName From competition_judges WHERE lastName = '{lastname}' AND CompId = {active_comp} AND active = 1")
                 st1 = cur.fetchall()
                 if len(st1) == 1:
+                    # Заменить регуляркой
                     text = text.replace(lastname + ' ' + firstname, st1[0]['lastName'] + ' ' + st1[0]['firstName'])
                     continue
 

@@ -422,7 +422,7 @@ async def for_free(user_id):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"SELECT * FROM competition_judges WHERE compId = {active_comp} AND is_use = 0 AND active = 1 ORDER BY lastName")
+            cur.execute(f"SELECT * FROM competition_judges WHERE compId = {active_comp} AND is_use = 0 AND active = 1 and workCode <> 3 ORDER BY lastName")
             judgesComp = cur.fetchall()
             cur.close()
 
