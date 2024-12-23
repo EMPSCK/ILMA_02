@@ -68,6 +68,8 @@ async def pull_to_comp_group_jud(user_id, crew_id, area):
             zgs = area[2].split(', ')
             lin = area[3].split(', ')
             have_gs = 1
+        if len(area) == 2:
+            lin = lin = area[1].split(', ')
         conn = pymysql.connect(
             host=config.host,
             port=3306,
