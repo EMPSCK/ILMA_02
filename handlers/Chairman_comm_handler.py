@@ -493,7 +493,7 @@ async def f4(callback: types.CallbackQuery):
                         name = f'@{callback.from_user.username}'
 
                     await callback.message.bot.send_message(scrutineer_id, f"Сообщение от пользователя {name}")
-                    await callback.message.bot.send_message(scrutineer_id, f"<code>{callback.message.text}</code>", parse_mode='html')
+                    await callback.message.bot.send_message(scrutineer_id, callback.message.text, parse_mode='html')
                     await callback.message.delete_reply_markup()
                     await chairman_queries.set_group_counter(generation_results[callback.from_user.id]['judges'], generation_results[callback.from_user.id]['compId'])
                     await callback.message.answer('✅Информация отправлена РСК')

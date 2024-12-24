@@ -556,7 +556,7 @@ async def json_to_message(json_export, data):
             text = f'{key}. {group_name}\n{json_export[key]["msg"]}'
             r.append(text)
     text_01 = '\n\n'.join(r)
-    return f"<code>{text_01}</code>"
+    return text_01
 
 
 async def get_group_name(compId, groupNumber):
@@ -896,7 +896,7 @@ async def generate_zgs(compId, n):
                 names[jud['id']] = jud
                 i += 1
             text = await generate_zgs_to_message(names)
-            json_export = {'msg': f"<code>{text}</code>", 'status': 'succsess', 'judges': names}
+            json_export = {'msg': text, 'status': 'succsess', 'judges': names}
         return json_export
     except Exception as e:
         print(e)
