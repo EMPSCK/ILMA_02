@@ -148,6 +148,7 @@ async def cmd_start(message: Message):
 async def cmd_judes(message: Message, state:FSMContext):
     user_status = await get_user_status_query.get_user_status(message.from_user.id)
     if user_status == 3 or user_status == 2:
+        await state.clear()
         judges_codes[message.from_user.id] = 0
         last_added_judges[message.from_user.id] = []
         try:
@@ -366,6 +367,7 @@ async def f4(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'enter_book_number')
 async def f4(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
     enter_mes[callback.from_user.id] = callback.message.message_id
     try:
         jud = current_problem_jud[callback.from_user.id]
@@ -377,6 +379,7 @@ async def f4(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(Solve_judges_problem.bookNumber)
 async def f2(message: Message, state: FSMContext):
+    await state.clear()
     try:
         code = judges_codes[message.from_user.id]
         await message.bot.delete_message(chat_id=message.chat.id, message_id=enter_mes[message.from_user.id])
@@ -384,14 +387,17 @@ async def f2(message: Message, state: FSMContext):
         booknumber = message.text
         if booknumber.isdigit() == False:
             await message.answer('❌Ошибка. Неверный формат данных', reply_markup=chairmans_kb.book_number_kb)
+            await state.clear()
             return
 
         check_booknum = await scrutineer_queries.have_book_same_booknum(int(booknumber))
         if check_booknum == -1:
             await message.answer('❌Ошибка', reply_markup=chairmans_kb.book_number_kb)
+            await state.clear()
             return
         elif check_booknum == 0:
             await message.answer('❌Ошибка. Номер книжки не найден', reply_markup=chairmans_kb.book_number_kb)
+            await state.clear()
             return
 
         jud = current_problem_jud[message.from_user.id]
@@ -560,6 +566,7 @@ from chairman_moves import generation_logic
 async def cmd_start(message: Message, state: FSMContext):
     user_status = await get_user_status_query.get_user_status(message.from_user.id)
     if user_status == 2 or user_status == 3:
+        await state.clear()
         active_comp = await general_queries.get_CompId(message.from_user.id)
         if active_comp == 0:
             await message.delete()
@@ -624,7 +631,8 @@ async def cmd_start(call: types.CallbackQuery):
 
 
 @router.callback_query(F.data == 'end_zgs_generation_proces')
-async def cmd_start(call: types.CallbackQuery):
+async def cmd_start(call: types.CallbackQuery, state: FSMContext):
+    await state.clear()
     await call.message.delete_reply_markup()
     await call.message.answer('Генерация завершена')
 
@@ -694,8 +702,9 @@ async def cmd_start(call: types.CallbackQuery):
 
 
 @router.callback_query(F.data == ('group_edit'))
-async def cmd_start(call: types.CallbackQuery):
+async def cmd_start(call: types.CallbackQuery, state: FSMContext):
     try:
+        await state.clear()
         active_comp = await general_queries.get_CompId(call.from_user.id)
         if active_comp == 0:
             await call.message.answer('❌Ошибка\nСоревнование не найдено')
@@ -731,6 +740,7 @@ class Edit_group_params(StatesGroup):
 
 @router.callback_query(F.data == ('min_group_cat'))
 async def cmd_start(call: types.CallbackQuery, state:FSMContext):
+    await state.clear()
     try:
         await call.message.edit_text("<b>Введите новыйй ид минимальной категории:</b>\n\nПятая: 1\nЧетвертая: 2\nТретья: 3\nВторая: 4\nПервая: 5\nВысшая: 6\nМеждународная: 7", parse_mode='html', reply_markup=chairmans_kb.back_kb)
         await state.set_state(Edit_group_params.firstState)
@@ -747,6 +757,7 @@ async def cmd_start(message: Message, state:FSMContext):
         oldcall = edit_group_info[message.from_user.id]['call']
         if cat_id not in ['1', '2', '3', '4', '5', '6', '7']:
             await oldcall.message.edit_text('❌Ошибка. Неверный формат данных', reply_markup=scrutineer_kb.back_mark)
+            await state.clear()
             return
         else:
             compId = edit_group_info[use_id]['compId']
@@ -785,6 +796,7 @@ async def cmd_start(message: Message, state:FSMContext):
         oldcall = edit_group_info[message.from_user.id]['call']
         if not(cat_id.isdigit() and 0 < int(cat_id) <= 13):
             await oldcall.message.edit_text('❌Ошибка. Неверный формат данных', reply_markup=scrutineer_kb.back_mark)
+            await state.clear()
             return
         else:
             compId = edit_group_info[use_id]['compId']
@@ -826,6 +838,7 @@ async def cmd_start(message: Message, state:FSMContext):
         oldcall = edit_group_info[message.from_user.id]['call']
         if not(cat_id.isdigit() and 0 < int(cat_id) <= 13):
             await oldcall.message.edit_text('❌Ошибка. Неверный формат данных', reply_markup=scrutineer_kb.back_mark)
+            await state.clear()
             return
         else:
             compId = edit_group_info[use_id]['compId']
@@ -867,6 +880,7 @@ async def cmd_start(message: Message, state:FSMContext):
         oldcall = edit_group_info[message.from_user.id]['call']
         if not cat_id in ['0', '1', '2']:
             await oldcall.message.edit_text('❌Ошибка. Неверный формат данных', reply_markup=scrutineer_kb.back_mark)
+            await state.clear()
             return
         else:
             compId = edit_group_info[use_id]['compId']
