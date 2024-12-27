@@ -230,7 +230,7 @@ async def f2(message: Message, state: FSMContext):
         await message.answer('При загрузке списка возникла ошибка, попробуйте еще раз через команду /judges')
     await state.clear()
 
-
+from queries import chairman_queries_02
 @router.callback_query(F.data == 'cancel_load')
 async def f4(callback: types.CallbackQuery, state: FSMContext):
     try:
@@ -241,6 +241,7 @@ async def f4(callback: types.CallbackQuery, state: FSMContext):
         pass
     await state.clear()
     await callback.message.delete()
+    await chairman_queries_02.set_sex_for_judges(callback.from_user.id)
     await callback.message.answer('Загрузка завершена')
 
 
@@ -253,6 +254,7 @@ async def edit_problem_jud(callback: types.CallbackQuery, state: FSMContext, q=1
             status1 = await chairman_queries.check_celebrate(callback.from_user.id, last_added_judges[callback.from_user.id])
             if status1 != 0:
                 await callback.message.answer(status1)
+            await chairman_queries_02.set_sex_for_judges(callback.from_user.id)
             await callback.message.answer('Загрузка завершена')
             await callback.message.delete()
             return
@@ -285,6 +287,7 @@ async def edit_problem_jud_after_enter_booknum(message: Message, state: FSMConte
             status1 = await chairman_queries.check_celebrate(message.from_user.id, last_added_judges[message.from_user.id])
             if status1 != 0:
                 await message.answer(status1)
+            await chairman_queries_02.set_sex_for_judges(message.from_user.id)
             await message.answer('Загрузка завершена')
             return
         if q == 1:

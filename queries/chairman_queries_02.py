@@ -123,3 +123,37 @@ async def pull_to_comp_group_jud(user_id, crew_id, area):
     except Exception as e:
         print(e)
         return -1
+
+async def set_sex_for_judges(user_id):
+    active_comp = await general_queries.get_CompId(user_id)
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"select id, firstName from competition_judges where compId = {active_comp} and sex not in ('male', 'female', 'unknown')")
+            judges = cur.fetchall()
+
+            male = open('male_names_rus.txt', "r", encoding="utf_8_sig")
+            female = open('female_names_rus.txt', "r", encoding="utf_8_sig")
+            male = set(male.readlines())
+            female = set(female.readlines())
+            for jud in judges:
+                name = jud['firstName'].strip()
+                if name + '\n' in male:
+                    sex = 'male'
+                elif name + '\n' in female:
+                    sex = 'female'
+                else:
+                    sex = 'unknown'
+                cur.execute(f"update competition_judges set sex = '{sex}' where id = {jud['id']}")
+                conn.commit()
+    except Exception as e:
+        print(e)
+        return -1
