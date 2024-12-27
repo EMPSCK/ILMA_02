@@ -147,9 +147,10 @@ async def check_list(text, user_id):
             for data in areas_01:
 
                 # Новая логика для двух таблиц
-                crew_id = await chairman_queries_02.pull_to_crew_group(user_id, group_num, data[0])
-                if crew_id != -1:
-                    await chairman_queries_02.pull_to_comp_group_jud(user_id, crew_id, data[1])
+                if group_num is not None:
+                    crew_id = await chairman_queries_02.pull_to_crew_group(user_id, group_num, data[0])
+                    if crew_id != -1:
+                        await chairman_queries_02.pull_to_comp_group_jud(user_id, crew_id, data[1])
 
             return (1, s, list_for_group_counter)
         else:
