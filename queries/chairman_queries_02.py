@@ -172,3 +172,41 @@ async def set_sex_for_judges(user_id):
     except Exception as e:
         print(e)
         return -1
+
+
+async def check_gender_zgs(user_id, zgs):
+    active_comp = await general_queries.get_CompId(user_id)
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            genders = []
+            for jud in zgs:
+                i = jud.split()
+                if len(i) == 2:
+                    lastname, firstname = i
+                else:
+                    lastname = i[0]
+                    firstname = ' '.join(i[1::])
+                cur.execute(f"select sex from competition_judges where compId = {active_comp} and ((firstName = '{firstname}' and lastName = '{lastname}') or (firstName2 = '{firstname}' and lastName2 = '{lastname}'))")
+                ans = cur.fetchone()
+                if ans is not None:
+                    if ans['sex'] != 'unknown':
+                        genders.append(ans['sex'])
+            genders = set(genders)
+            if len(genders) == 1:
+                return 1, 'гендерное распределение среди згс нарушает регламент'
+            else:
+                return 0, ''
+
+
+    except Exception as e:
+        print(e)
+        return -1

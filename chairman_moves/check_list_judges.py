@@ -22,6 +22,7 @@ async def check_list(text, user_id):
 
         # Разбиваем текст сообщения на площадки по переносам строки, у строк с судьями по краям обрезаем переносы/пробелы/точки
         areas = re.split('\n\s{0,}\n', text)
+        have_gs_01 = ['Гс.' in area for area in areas]
         areas_02 = areas.copy()
         areas = [re.split('Гс.\s{0,}|Згс.\s{0,}|Линейные судьи\s{0,}:\s{0,}|Линейные судьи\s{0,}.\s{0,}', i) for i in areas]
         areas = [[i[j].strip().strip('\n').strip('.') for j in range(len(i))] for i in areas]
@@ -64,6 +65,24 @@ async def check_list(text, user_id):
                     k2 = await chairman_queries.group_id_to_lin_const(active_comp, group_num)
                     if k2 != 0 and k2 is not None:
                         const = k2
+
+                    groupType = await chairman_queries.is_rc_a(group_num, active_comp)
+
+                    if groupType == 1:
+                        if have_gs_01[areaindex] == 1:
+                            if len(otherjud) > 1:
+                                zgs = otherjud[1::]
+                            else:
+                                zgs = []
+                        else:
+                            zgs = otherjud
+
+                        k9, msg = await chairman_queries_02.check_gender_zgs(user_id, zgs)
+                        if k9 == 1:
+                            flag9 = 1
+                            s += f'❌Ошибка: {area}: {msg}\n\n'
+
+
 
 
 
@@ -151,8 +170,8 @@ async def check_list(text, user_id):
                 if group_num is not None:
                     group_num = int(group_num[0].replace('.', '').strip())
                     crew_id = await chairman_queries_02.pull_to_crew_group(user_id, group_num, data[0])
-                    have_gs = 'Гс' in data[2]
-                    have_zgs = 'Згс' in data[2]
+                    have_gs = 'Гс.' in data[2]
+                    have_zgs = 'Згс.' in data[2]
                     have_lin = 'Линейные' in data[2]
                     have = [have_gs, have_zgs, have_lin]
                     if crew_id != -1:

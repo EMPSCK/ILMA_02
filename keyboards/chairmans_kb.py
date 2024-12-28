@@ -482,7 +482,7 @@ async def get_edit_group_kb(user_id, compId):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select groupNumber, groupName from competition_group where compId = {compId}")
+            cur.execute(f"select groupNumber, groupName from competition_group where compId = {compId} and isActive = 1")
             group_list = cur.fetchall()
             for j in range(len(group_list)):
                 but2.append(InlineKeyboardButton(text=f'{group_list[j]["groupNumber"]}. {group_list[j]["groupName"]}',
