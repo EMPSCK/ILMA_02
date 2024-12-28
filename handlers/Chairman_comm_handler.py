@@ -471,6 +471,7 @@ async def f4(callback: types.CallbackQuery):
     await callback.message.answer('Генерация завершена')
 
 
+from queries import chairman_queries_02
 @router.callback_query(F.data == 'send_generate_rsk')
 async def f4(callback: types.CallbackQuery):
     scrutineer_id = await chairman_queries.get_Scrutineer(callback.from_user.id)

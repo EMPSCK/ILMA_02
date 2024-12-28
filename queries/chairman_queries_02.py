@@ -1,6 +1,7 @@
 import pymysql
 import config
 from queries import general_queries
+from queries import chairman_queries
 from chairman_moves import check_list_judges
 import re
 import datetime
@@ -205,6 +206,29 @@ async def check_gender_zgs(user_id, zgs):
                 return 1, 'гендерное распределение среди згс нарушает регламент'
             else:
                 return 0, ''
+
+
+    except Exception as e:
+        print(e)
+        return -1
+
+async def save_generate_result_to_new_tables(user_id, data):
+    print(data)
+    active_comp = await general_queries.get_CompId(user_id)
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            for groupumber in data:
+                groupName = ''
+
 
 
     except Exception as e:
