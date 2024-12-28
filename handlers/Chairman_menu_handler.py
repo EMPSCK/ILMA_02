@@ -758,7 +758,7 @@ async def cmd_start(message: Message, state:FSMContext):
         cat_id = message.text
         await message.delete()
         oldcall = edit_group_info[message.from_user.id]['call']
-        if cat_id not in ['1', '2', '3', '4', '5', '6', '7']:
+        if cat_id not in ['1', '2', '3', '4', '5', '6', '7', '0']:
             await oldcall.message.edit_text('❌Ошибка. Неверный формат данных', reply_markup=scrutineer_kb.back_mark)
             await state.clear()
             return
@@ -839,7 +839,7 @@ async def cmd_start(message: Message, state:FSMContext):
         cat_id = message.text
         await message.delete()
         oldcall = edit_group_info[message.from_user.id]['call']
-        if not(cat_id.isdigit() and 0 < int(cat_id) <= 13):
+        if not(cat_id.isdigit() and 0 <= int(cat_id) <= 13):
             await oldcall.message.edit_text('❌Ошибка. Неверный формат данных', reply_markup=scrutineer_kb.back_mark)
             await state.clear()
             return

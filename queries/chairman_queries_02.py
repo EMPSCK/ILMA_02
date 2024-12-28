@@ -52,14 +52,15 @@ async def name_to_jud_id(last_name, name, compId):
     except:
         return -1
 
-async def pull_to_comp_group_jud(user_id, crew_id, area):
+async def pull_to_comp_group_jud(user_id, crew_id, area, have):
     active_comp = await general_queries.get_CompId(user_id)
     ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    have_gs = 0
+    have_gs, have_zgs, have_lin = have
     zgs = []
     lin = []
     gs = []
     try:
+        '''
         if len(area) == 3:
             zgs = area[1].split(', ')
             lin = area[2].split(', ')
@@ -69,7 +70,21 @@ async def pull_to_comp_group_jud(user_id, crew_id, area):
             lin = area[3].split(', ')
             have_gs = 1
         if len(area) == 2:
-            lin = lin = area[1].split(', ')
+            lin = area[1].split(', ')
+        '''
+        if have_gs == 1 and have_zgs == 1 and have_lin == 1:
+            gs = area[1].split(', ')
+            zgs = area[2].split(', ')
+            lin = area[3].split(', ')
+        elif have_gs == 1 and have_lin == 1 and have_zgs == 0:
+            gs = area[1].split(', ')
+            lin = area[2].split(', ')
+        elif have_zgs == 1 and have_lin == 1 and have_gs == 0:
+            zgs = area[1].split(', ')
+            lin = area[2].split(', ')
+        elif have_zgs == 0 and have_lin == 1 and have_gs == 0:
+            lin = area[1].split(', ')
+
         conn = pymysql.connect(
             host=config.host,
             port=3306,
@@ -80,6 +95,19 @@ async def pull_to_comp_group_jud(user_id, crew_id, area):
         )
         with conn:
             cur = conn.cursor()
+            for judIndex in range(len(gs)):
+                i = gs[judIndex].split()
+                if len(i) == 2:
+                    lastname, firstname = i
+                else:
+                    lastname = i[0]
+                    firstname = ' '.join(i[1::])
+                judge_id = await name_to_jud_id(lastname, firstname, active_comp)
+                ident = f'Гл. судья'
+                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
+                cur.execute(sql, (crew_id, 2, ident, lastname, firstname, judge_id))
+                conn.commit()
+
             for judIndex in range(len(zgs)):
                 i = zgs[judIndex].split()
                 if len(i) == 2:
@@ -105,19 +133,6 @@ async def pull_to_comp_group_jud(user_id, crew_id, area):
                 ident = f'{ALPHABET[judIndex]}({judIndex + 1})'
                 sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
                 cur.execute(sql, (crew_id, 0, ident, lastname, firstname, judge_id))
-                conn.commit()
-
-            for judIndex in range(len(gs)):
-                i = gs[judIndex].split()
-                if len(i) == 2:
-                    lastname, firstname = i
-                else:
-                    lastname = i[0]
-                    firstname = ' '.join(i[1::])
-                judge_id = await name_to_jud_id(lastname, firstname, active_comp)
-                ident = f'Гл. судья'
-                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
-                cur.execute(sql, (crew_id, 2, ident, lastname, firstname, judge_id))
                 conn.commit()
             return 1
     except Exception as e:

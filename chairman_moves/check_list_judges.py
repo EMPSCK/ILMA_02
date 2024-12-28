@@ -13,7 +13,7 @@ async def check_list(text, user_id):
         areas_01 = []
         s = ''
         list_for_group_counter = []
-        flag1, flag2, flag3, flag4, flag5, flag6, flag7, flag8 = 0, 0, 0, 0, 0, 0, 0, 0
+        flag1, flag2, flag3, flag4, flag5, flag6, flag7, flag8, flag9 = 0, 0, 0, 0, 0, 0, 0, 0, 0
         active_comp = await general_queries.get_CompId(user_id)
         const = await general_queries.get_tournament_lin_const(active_comp)
         judges_free = await general_queries.get_judges_free(active_comp)
@@ -22,6 +22,7 @@ async def check_list(text, user_id):
 
         # Разбиваем текст сообщения на площадки по переносам строки, у строк с судьями по краям обрезаем переносы/пробелы/точки
         areas = re.split('\n\s{0,}\n', text)
+        areas_02 = areas.copy()
         areas = [re.split('Гс.\s{0,}|Згс.\s{0,}|Линейные судьи\s{0,}:\s{0,}|Линейные судьи\s{0,}.\s{0,}', i) for i in areas]
         areas = [[i[j].strip().strip('\n').strip('.') for j in range(len(i))] for i in areas]
         sumjudes = []
@@ -50,9 +51,9 @@ async def check_list(text, user_id):
                     [area[i] for i in range(len(area)) if i != 0 and area[i] != '' and i != len(area) - 1]))
                 area_01 = area.copy()
                 area = area[0]
-                areas_01.append([area, area_01])
                 #group_num = re.search('Гр.\s{0,}\d+', area)
                 group_num = re.search('\d+.', area[0:5].strip())
+                areas_01.append([area, area_01, areas_02[areaindex], group_num])
                 if group_num is not None:
                     group_num = int(group_num[0].replace('.', '').strip())
                     k7 = await chairman_queries.check_min_category(otherjud, linjud, group_num, active_comp, area)
@@ -143,14 +144,19 @@ async def check_list(text, user_id):
 
 
         config.judges_index[user_id] = judges_use
-        if flag1 + flag2 + flag3 + flag4 + flag5 + flag6 + flag7 + flag8 == 0:
+        if flag1 + flag2 + flag3 + flag4 + flag5 + flag6 + flag7 + flag8 + flag9 == 0:
             for data in areas_01:
-
                 # Новая логика для двух таблиц
+                group_num = data[3]
                 if group_num is not None:
+                    group_num = int(group_num[0].replace('.', '').strip())
                     crew_id = await chairman_queries_02.pull_to_crew_group(user_id, group_num, data[0])
+                    have_gs = 'Гс' in data[2]
+                    have_zgs = 'Згс' in data[2]
+                    have_lin = 'Линейные' in data[2]
+                    have = [have_gs, have_zgs, have_lin]
                     if crew_id != -1:
-                        await chairman_queries_02.pull_to_comp_group_jud(user_id, crew_id, data[1])
+                        await chairman_queries_02.pull_to_comp_group_jud(user_id, crew_id, data[1], have)
 
             return (1, s, list_for_group_counter)
         else:
