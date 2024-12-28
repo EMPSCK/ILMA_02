@@ -105,6 +105,7 @@ async def check_chairman_pin(tg_id, pin, mode):
                 if gsName is None:
                     gsName = 'chairman'
 
+                mode = cur.execute(f"select id from skatebotusers where tg_id = {tg_id}")
                 if mode == 0:
                     sql = "INSERT INTO skatebotusers (`tg_id`, `Id_active_comp`, `status`, `active`, `сomment`) VALUES (%s, %s, %s, %s, %s)"
                     cur.execute(sql, (tg_id, compid, 3, 1, gsName))
