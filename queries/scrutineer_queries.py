@@ -237,17 +237,17 @@ async def get_group_list(user_id):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select groupNumber, groupName from competition_group where compId = {active_comp}")
+            cur.execute(f"select groupNumber, groupName from competition_group where compId = {active_comp} and isActive = 1")
             ans = cur.fetchall()
             groupList = ''
             if len(ans) == 0:
                 groupList = "Группы не были обнаруженны"
             for i in range(len(ans)):
                 if i % 2 == 0:
-                    groupList += f'<b>\n{ans[i]["groupNumber"]}. {ans[i]["groupName"]}</b>'
+                    groupList += f'\n{ans[i]["groupNumber"]}. {ans[i]["groupName"]}'
                 else:
                     groupList += f'\n{ans[i]["groupNumber"]}. {ans[i]["groupName"]}'
-            text = f'{info}\n\n📋<b>Список групп:</b>{groupList}'
+            text = f'{info}\n\n📋Список групп:{groupList}'
             return text
     except Exception as e:
         print(e)
