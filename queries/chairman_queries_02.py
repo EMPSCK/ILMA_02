@@ -212,8 +212,29 @@ async def check_gender_zgs(user_id, zgs):
         print(e)
         return -1
 
+async def judgeId_to_name(judge_id):
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"select lastName, firstName, workCode from competition_judges where id = {judge_id}")
+            ans = cur.fetchone()
+            return ans
+
+
+    except Exception as e:
+        print(e)
+        return -1
+
+
 async def save_generate_result_to_new_tables(user_id, data):
-    print(data)
     active_comp = await general_queries.get_CompId(user_id)
     try:
         conn = pymysql.connect(
@@ -226,11 +247,41 @@ async def save_generate_result_to_new_tables(user_id, data):
         )
         with conn:
             cur = conn.cursor()
-            for groupumber in data:
-                groupName = ''
+            for groupnumber in data:
+                if data[groupnumber]['status'] != 'success':
+                    continue
 
+                #Создаем запись в competition_group_crew
+                cur.execute(f"select * from competition_group where compId = {active_comp} and groupNumber = {groupnumber}")
+                ans = cur.fetchone()
+                groupName = ans['groupName']
+                sql = "INSERT INTO competition_group_crew (`compId`, `groupNumber`, `roundName`) VALUES (%s, %s, %s)"
+                cur.execute(sql, (
+                    active_comp, groupnumber, groupName))
+                conn.commit()
+                crew_id = cur.lastrowid
+                #Докидываем судей в competition_group_judges
+                ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                lin_id = data[groupnumber]['lin_id']
+                zgs_id = data[groupnumber]['zgs_id']
 
+                for judIdIndex in range(len(zgs_id)):
+                    info = await judgeId_to_name(zgs_id[judIdIndex])
+                    lastname = info['lastName']
+                    firstname = info['firstName']
+                    ident = f'ЗГС'
+                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
+                    cur.execute(sql, (crew_id, 1, ident, lastname, firstname, zgs_id[judIdIndex]))
+                    conn.commit()
 
+                for judIdIndex in range(len(lin_id)):
+                    info = await judgeId_to_name(lin_id[judIdIndex])
+                    lastname = info['lastName']
+                    firstname = info['firstName']
+                    ident = f'{ALPHABET[judIdIndex]}({judIdIndex + 1})'
+                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
+                    cur.execute(sql, (crew_id, 0, ident, lastname, firstname, lin_id[judIdIndex]))
+                    conn.commit()
     except Exception as e:
         print(e)
         return -1

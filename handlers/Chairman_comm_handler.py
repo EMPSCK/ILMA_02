@@ -492,7 +492,7 @@ async def f4(callback: types.CallbackQuery):
                         name = await chairman_queries.get_comment(callback.from_user.id)
                     else:
                         name = f'@{callback.from_user.username}'
-
+                    await chairman_queries_02.save_generate_result_to_new_tables(callback.from_user.id, generation_results[callback.from_user.id]['json'])
                     await callback.message.bot.send_message(scrutineer_id, f"Сообщение от пользователя {name}")
                     await callback.message.bot.send_message(scrutineer_id, callback.message.text, parse_mode='html')
                     await callback.message.delete_reply_markup()
