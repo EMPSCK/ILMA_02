@@ -178,7 +178,6 @@ async def get_cal_menu(callback: types.CallbackQuery):
     user_status = await get_user_status_query.get_user_status(callback.from_user.id)
     # Админ
     if user_status == 1:
-        await callback.message.answer('👋Добро пожаловать в admin интерфейс бота SS6', reply_markup=admins_kb.menu_kb)
         return '👋Добро пожаловать в admin интерфейс бота SS6', 1
 
     # scrutinner

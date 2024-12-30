@@ -95,3 +95,90 @@ async def edit_tournament(id, text):
     except:
         print('Ошибка выполнения запроса создания соревнования')
         return 0
+
+
+async def get_tour_info(compId):
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"SELECT * FROM competition WHERE compId = {compId}")
+            comp = cur.fetchone()
+
+            chairmanId = comp['chairman_Id']
+            scrutineerId = comp['scrutineerId']
+            if chairmanId is None or len(chairmanId) == 0:
+                chairman = "не определен"
+            else:
+                cur.execute(f"select сomment, tg_id from skatebotusers where tg_id = {comp['chairman_Id']}")
+                chairman = cur.fetchone()
+                if chairman is None:
+                    chairman = "не определен"
+                else:
+                    chairman = chairman['сomment'] + ', ' + str(chairman['tg_id'])
+
+            if scrutineerId is None or len(scrutineerId) == 0:
+                scrutineer = "не определен"
+            else:
+                cur.execute(f"select сomment, tg_id from skatebotusers where tg_id = {comp['scrutineerId']}")
+                scrutineer = cur.fetchone()
+                if scrutineer is None:
+                    scrutineer = "не определен"
+                else:
+                    scrutineer = scrutineer['сomment'] + ', ' + str(scrutineer['tg_id'])
+
+
+            active_enc = {0: "неактивный", 1: "активный"}
+            status = active_enc[comp['isActive']]
+            text = f'''{comp["compName"]}, {comp['city']}\n{str(comp["date1"])}|{str(comp["date2"])}\nСтатус: {status}\nГлавный судья: {chairman}\nРСК: {scrutineer}\nКод: {comp["pinCode"]}'''
+
+            return text
+    except Exception as e:
+        print(e)
+        print('Ошибка выполнения запроса поиск scrutinner для chairman')
+        return 0
+
+async def activate_tour(compId):
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"update competition set isActive = 1 where compId = {compId}")
+            conn.commit()
+            return 1
+    except Exception as e:
+        print(e)
+        return 0
+
+async def deactivatetour(compId):
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"update competition set isActive = 0 where compId = {compId}")
+            conn.commit()
+            return 1
+    except Exception as e:
+        print(e)
+        return 0

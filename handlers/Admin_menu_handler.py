@@ -14,6 +14,7 @@ tg_id_to_CompId = {}
 class Create_comp(StatesGroup):
     next_create_comp_state = State()
 
+
 #Создать новый турнир
 @router.callback_query(F.data == 'create_competition')
 async def cmd_start(call: types.CallbackQuery, state:FSMContext):
@@ -118,8 +119,49 @@ async def cmd_start(call: types.CallbackQuery, state:FSMContext):
 
 
 from aiogram.filters import Command
-from admin_moves import filemanager
-@router.message(Command("start_files_update"))
-async def cmd_start(message: Message):
-    return await filemanager.filesmanager(message)
+
+oldinfo = {}
+@router.callback_query(F.data == 'edit_tournament')
+async def cmd_start(call: types.CallbackQuery, state:FSMContext):
+    user_status = await get_user_status_query.get_user_status(call.from_user.id)
+    if user_status == 1:
+
+        markup = await admins_kb.get_tour_list_markup()
+        await call.message.edit_text('Выберите соревнование', reply_markup=markup)
+
+
+@router.callback_query(F.data.startswith('tournament_edit_choice_'))
+async def cmd_start(call: types.CallbackQuery):
+    compId = int(call.data.replace('tournament_edit_choice_', ''))
+    oldinfo[call.from_user.id] = {'compId': compId}
+    text = await admins_queries.get_tour_info(compId)
+    await call.message.edit_text(text, reply_markup=admins_kb.edit_tour_kb)
+
+
+
+@router.callback_query(F.data == 'active_tour')
+async def cmd_start(call: types.CallbackQuery, state:FSMContext):
+    try:
+        user_status = await get_user_status_query.get_user_status(call.from_user.id)
+        if user_status == 1:
+            compId = oldinfo[call.from_user.id]['compId']
+            await admins_queries.activate_tour(compId)
+            text = await admins_queries.get_tour_info(compId)
+            await call.message.edit_text(text, reply_markup=admins_kb.edit_tour_kb)
+    except:
+        await call.answer('✅Соревнование уже активно')
+
+
+from handlers import start_stage_handler
+@router.callback_query(F.data == 'delactive_tour')
+async def cmd_start(call: types.CallbackQuery, state:FSMContext):
+    try:
+        user_status = await get_user_status_query.get_user_status(call.from_user.id)
+        if user_status == 1:
+            compId = oldinfo[call.from_user.id]['compId']
+            await admins_queries.deactivatetour(compId)
+            text = await admins_queries.get_tour_info(compId)
+            await call.message.edit_text(text, reply_markup=admins_kb.edit_tour_kb)
+    except:
+        await call.answer('❌Соревнование уже неактивно')
 
