@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
+from datetime import date
 
 cancel_button = [InlineKeyboardButton(text="Отменить операцию", callback_data='cancel_load')]
 load_judges_kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button])
@@ -28,7 +28,8 @@ async def get_tour_list_markup():
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select * from competition")
+            today = date.today()
+            cur.execute(f"select * from competition where date2 >= {today}")
             ans = cur.fetchall()
             but = []
             but2 = []
