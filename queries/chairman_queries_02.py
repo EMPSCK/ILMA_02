@@ -153,22 +153,15 @@ async def set_sex_for_judges(user_id):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select id, firstName from competition_judges where compId = {active_comp} and sex not in ('male', 'female', 'unknown')")
+            cur.execute(f"select id, firstName from competition_judges where compId = {active_comp} and gender not in (0, 1, 2)")
             judges = cur.fetchall()
 
-            male = open('male_names_rus.txt', "r", encoding="utf_8_sig")
-            female = open('female_names_rus.txt', "r", encoding="utf_8_sig")
-            male = set(male.readlines())
-            female = set(female.readlines())
+
             for jud in judges:
                 name = jud['firstName'].strip()
-                if name + '\n' in male:
-                    sex = 'male'
-                elif name + '\n' in female:
-                    sex = 'female'
-                else:
-                    sex = 'unknown'
-                cur.execute(f"update competition_judges set sex = '{sex}' where id = {jud['id']}")
+                sex = await get_gender(name)
+
+                cur.execute(f"update competition_judges set gender = {sex} where id = {jud['id']}")
                 conn.commit()
     except Exception as e:
         print(e)
@@ -196,11 +189,11 @@ async def check_gender_zgs(user_id, zgs):
                 else:
                     lastname = i[0]
                     firstname = ' '.join(i[1::])
-                cur.execute(f"select sex from competition_judges where compId = {active_comp} and ((firstName = '{firstname}' and lastName = '{lastname}') or (firstName2 = '{firstname}' and lastName2 = '{lastname}'))")
+                cur.execute(f"select gender from competition_judges where compId = {active_comp} and ((firstName = '{firstname}' and lastName = '{lastname}') or (firstName2 = '{firstname}' and lastName2 = '{lastname}'))")
                 ans = cur.fetchone()
                 if ans is not None:
-                    if ans['sex'] != 'unknown':
-                        genders.append(ans['sex'])
+                    if ans['gender'] != 2:
+                        genders.append(ans['gender'])
             genders = set(genders)
             if len(genders) == 1:
                 return 1, 'гендерное распределение среди згс нарушает регламент'
@@ -285,3 +278,27 @@ async def save_generate_result_to_new_tables(user_id, data):
     except Exception as e:
         print(e)
         return -1
+
+
+async def get_gender(firstName):
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"select gender from gender_encoder where firstName = '{firstName}'")
+            ans = cur.fetchone()
+            if ans is None:
+                return 2
+            else:
+                return ans['gender']
+    except Exception as e:
+        print(e)
+        return 2
+

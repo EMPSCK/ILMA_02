@@ -76,7 +76,7 @@ async def load_list(tg_id, text, compid, code):
                 SPORT_CategoryDateConfirm = person[0]['SPORT_CategoryDateConfirm']
                 federation = person[0]['federation']
                 DSFARR_Category_Id = person[0]['DSFARR_Category_Id']
-                sex = person[0]['sex']
+                sex = person[0]['gender']
 
 
                 if type(SPORT_CategoryDateConfirm) == str and type(SPORT_CategoryDate) == str:
@@ -119,7 +119,7 @@ async def load_list(tg_id, text, compid, code):
                         f"UPDATE competition_judges SET is_use = 0, active = 1 WHERE firstName = '{name}' AND lastName = '{last_name}' AND compId = {compid}")
                     conn.commit()
                 else:
-                    sql = "INSERT INTO competition_judges (`compId`, `lastName`, `firstName`, `SecondName`, `Birth`, `DSFARR_Category`, `DSFARR_CategoryDate`, `WDSF_CategoryDate`, `RegionId`, `City`, `Club`, `Translit`, `SPORT_Category`, `SPORT_CategoryDate`, `SPORT_CategoryDateConfirm`, `federation`, `Archive`, `bookNumber`, `notJudges`, `is_use`, `DSFARR_Category_Id`, `active`, `workCode`, `sex`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    sql = "INSERT INTO competition_judges (`compId`, `lastName`, `firstName`, `SecondName`, `Birth`, `DSFARR_Category`, `DSFARR_CategoryDate`, `WDSF_CategoryDate`, `RegionId`, `City`, `Club`, `Translit`, `SPORT_Category`, `SPORT_CategoryDate`, `SPORT_CategoryDateConfirm`, `federation`, `Archive`, `bookNumber`, `notJudges`, `is_use`, `DSFARR_Category_Id`, `active`, `workCode`, `gender`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     cur.execute(sql, (
                     compid, last_name, name, SecondName, Birth, DSFARR_Category, DSFARR_CategoryDate, WDSF_CategoryDate,
                     RegionId, City, Club, Translit, SPORT_Category, SPORT_CategoryDate, SPORT_CategoryDateConfirm,
