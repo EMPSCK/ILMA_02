@@ -13,7 +13,7 @@ async def check_list(text, user_id):
         areas_01 = []
         s = ''
         list_for_group_counter = []
-        flag1, flag2, flag3, flag4, flag5, flag6, flag7, flag8, flag9 = 0, 0, 0, 0, 0, 0, 0, 0, 0
+        flag1, flag2, flag3, flag4, flag5, flag6, flag7, flag8, flag9, flag10 = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         active_comp = await general_queries.get_CompId(user_id)
         const = await general_queries.get_tournament_lin_const(active_comp)
         judges_free = await general_queries.get_judges_free(active_comp)
@@ -57,6 +57,12 @@ async def check_list(text, user_id):
                 areas_01.append([area, area_01, areas_02[areaindex], group_num])
                 if group_num is not None:
                     group_num = int(group_num[0].replace('.', '').strip())
+                    status = await chairman_queries_02.active_group(active_comp, group_num)
+                    if status == 0:
+                        flag10 = 1
+                        s += f'❌Ошибка: {area}: Группа не активна\n\n'
+                        continue
+
                     k7 = await chairman_queries.check_min_category(otherjud, linjud, group_num, active_comp, area)
                     if k7 != 1:
                         flag7 = 1
@@ -164,7 +170,7 @@ async def check_list(text, user_id):
 
 
         config.judges_index[user_id] = judges_use
-        if flag1 + flag2 + flag3 + flag4 + flag5 + flag6 + flag7 + flag8 + flag9 == 0:
+        if flag1 + flag2 + flag3 + flag4 + flag5 + flag6 + flag7 + flag8 + flag9 + flag10 == 0:
             for data in areas_01:
                 # Новая логика для двух таблиц
                 group_num = data[3]

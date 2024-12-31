@@ -302,3 +302,29 @@ async def get_gender(firstName):
         print(e)
         return 2
 
+async def active_group(compId, groupNumber):
+    try:
+        conn = pymysql.connect(
+            host=config.host,
+            port=3306,
+            user=config.user,
+            password=config.password,
+            database=config.db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        with conn:
+            cur = conn.cursor()
+            cur.execute(f"select isActive from competition_group where compId = {compId} and groupNumber = {groupNumber}")
+            ans = cur.fetchone()
+            if ans is None:
+                return 0
+            else:
+                r = ans['isActive']
+                if r is None:
+                    return 0
+                else:
+                    return r
+
+    except Exception as e:
+        print(e)
+        return 0
