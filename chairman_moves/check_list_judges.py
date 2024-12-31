@@ -68,6 +68,7 @@ async def check_list(text, user_id):
 
                     groupType = await chairman_queries.is_rc_a(group_num, active_comp)
 
+                    '''
                     if groupType == 1:
                         if have_gs_01[areaindex] == 1:
                             if len(otherjud) > 1:
@@ -81,7 +82,7 @@ async def check_list(text, user_id):
                         if k9 == 1:
                             flag9 = 1
                             s += f'❌Ошибка: {area}: {msg}\n\n'
-
+                    '''
 
 
 
