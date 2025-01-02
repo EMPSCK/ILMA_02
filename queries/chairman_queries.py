@@ -1549,7 +1549,7 @@ async def check_rc_a_regions_VE(linjuds, compId, group_num):
             all_judges = []
 
             if compRegion == 0 or compRegion is None:
-                return 0
+                return 0, 0
 
             for jud in linjuds:
                 i = jud.split()
@@ -1562,7 +1562,7 @@ async def check_rc_a_regions_VE(linjuds, compId, group_num):
                 cur.execute(f"select id, lastName, firstName, RegionId from competition_judges where compId = {compId} and ((lastName = '{lastname}' and firstName = '{firstname}') or (lastName2 = '{lastname}' and firstName2 = '{firstname}'))")
                 jud_bd = cur.fetchall()
                 if len(jud_bd) != 1:
-                    return 0
+                    return 0, 0
                 jud_bd = jud_bd[0]
                 all_judges.append(jud_bd)
         home, other = info
@@ -1598,7 +1598,7 @@ async def check_rc_a_regions_VE(linjuds, compId, group_num):
             return f"Распределение регионов судей не соответствует правилам РС А: {msg}", 1
 
     except Exception as e:
-        return 0
+        return 0, 0
 
 
 async def is_rc_a(group_num, compId):

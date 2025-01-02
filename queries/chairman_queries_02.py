@@ -40,14 +40,13 @@ async def name_to_jud_id(last_name, name, compId):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select id from competition_judges where compId = {compId} and (lastName = '{last_name}' and firstName = '{name}')")
+            cur.execute(f"select id, skateId from competition_judges where compId = {compId} and (lastName = '{last_name}' and firstName = '{name}')")
             ans = cur.fetchone()
             if ans is None:
-                return -100
+                return {'id': -100, 'skateId': -100}
             else:
-                ans = ans['id']
                 if ans is None:
-                    return -100
+                    return {'id': -100, 'skateId': -100}
                 else:
                     return ans
     except:
@@ -103,10 +102,12 @@ async def pull_to_comp_group_jud(user_id, crew_id, area, have):
                 else:
                     lastname = i[0]
                     firstname = ' '.join(i[1::])
-                judge_id = await name_to_jud_id(lastname, firstname, active_comp)
+                ans = await name_to_jud_id(lastname, firstname, active_comp)
+                judge_id = ans['id']
+                skateId = ans['skateId']
                 ident = f'Гл. судья'
-                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
-                cur.execute(sql, (crew_id, 2, ident, lastname, firstname, judge_id))
+                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                cur.execute(sql, (crew_id, 2, ident, lastname, firstname, judge_id, skateId))
                 conn.commit()
 
             for judIndex in range(len(zgs)):
@@ -116,10 +117,12 @@ async def pull_to_comp_group_jud(user_id, crew_id, area, have):
                 else:
                     lastname = i[0]
                     firstname = ' '.join(i[1::])
-                judge_id = await name_to_jud_id(lastname, firstname, active_comp)
+                ans = await name_to_jud_id(lastname, firstname, active_comp)
+                judge_id = ans['id']
+                skateId = ans['skateId']
                 ident = f'ЗГС'
-                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
-                cur.execute(sql, (crew_id, 1, ident, lastname, firstname, judge_id))
+                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                cur.execute(sql, (crew_id, 1, ident, lastname, firstname, judge_id, skateId))
                 conn.commit()
 
 
@@ -130,10 +133,12 @@ async def pull_to_comp_group_jud(user_id, crew_id, area, have):
                 else:
                     lastname = i[0]
                     firstname = ' '.join(i[1::])
-                judge_id = await name_to_jud_id(lastname, firstname, active_comp)
+                ans = await name_to_jud_id(lastname, firstname, active_comp)
+                judge_id = ans['id']
+                skateId = ans['skateId']
                 ident = f'{ALPHABET[judIndex]}({judIndex + 1})'
-                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
-                cur.execute(sql, (crew_id, 0, ident, lastname, firstname, judge_id))
+                sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                cur.execute(sql, (crew_id, 0, ident, lastname, firstname, judge_id, skateId))
                 conn.commit()
             return 1
     except Exception as e:
@@ -217,7 +222,7 @@ async def judgeId_to_name(judge_id):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select lastName, firstName, workCode from competition_judges where id = {judge_id}")
+            cur.execute(f"select lastName, firstName, workCode, skateId from competition_judges where id = {judge_id}")
             ans = cur.fetchone()
             return ans
 
@@ -262,18 +267,20 @@ async def save_generate_result_to_new_tables(user_id, data):
                     info = await judgeId_to_name(zgs_id[judIdIndex])
                     lastname = info['lastName']
                     firstname = info['firstName']
+                    skateId = info['skateId']
                     ident = f'ЗГС'
-                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
-                    cur.execute(sql, (crew_id, 1, ident, lastname, firstname, zgs_id[judIdIndex]))
+                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                    cur.execute(sql, (crew_id, 1, ident, lastname, firstname, zgs_id[judIdIndex], skateId))
                     conn.commit()
 
                 for judIdIndex in range(len(lin_id)):
                     info = await judgeId_to_name(lin_id[judIdIndex])
                     lastname = info['lastName']
                     firstname = info['firstName']
+                    skateId = info['skateId']
                     ident = f'{ALPHABET[judIdIndex]}({judIdIndex + 1})'
-                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`) VALUES (%s, %s, %s, %s, %s, %s)"
-                    cur.execute(sql, (crew_id, 0, ident, lastname, firstname, lin_id[judIdIndex]))
+                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                    cur.execute(sql, (crew_id, 0, ident, lastname, firstname, lin_id[judIdIndex], skateId))
                     conn.commit()
     except Exception as e:
         print(e)

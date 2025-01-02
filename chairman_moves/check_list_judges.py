@@ -27,7 +27,6 @@ async def check_list(text, user_id):
         areas = [re.split('Гс.\s{0,}|Згс.\s{0,}|Линейные судьи\s{0,}:\s{0,}|Линейные судьи\s{0,}.\s{0,}', i) for i in areas]
         areas = [[i[j].strip().strip('\n').strip('.') for j in range(len(i))] for i in areas]
         sumjudes = []
-
         # На каждой из площадок получаем линейных и остальных судей
         for areaindex in range(len(areas)):
             area = areas[areaindex]
@@ -128,14 +127,6 @@ async def check_list(text, user_id):
                     a = ', '.join(map(str, set(otherjud) & set(linjud)))
                     s += f'🤔{area}: {a} совмеща(ет/ют) должности внутри площадки\n\n'
 
-
-                '''
-                # Проверяем фамилии линейных
-                if len(familylinjud) != len(set(familylinjud)):
-                    s += f'❌Ошибка: {area}: внутри линейной бригады есть одинаковые фамилии\n\n'
-                    flag2 = 1
-                sumjudes.append(set(otherjud + linjud))
-                '''
                 sumjudes.append(set(otherjud + linjud))
 
         # Проверяем пересечения между площадками
@@ -153,7 +144,6 @@ async def check_list(text, user_id):
             all_judges_areas |= i
 
         judges_use = []
-
         for i in all_judges_areas:
             if len(i.split()) == 2:
                 k = i.split()
@@ -171,7 +161,9 @@ async def check_list(text, user_id):
 
         config.judges_index[user_id] = judges_use
         if flag1 + flag2 + flag3 + flag4 + flag5 + flag6 + flag7 + flag8 + flag9 + flag10 == 0:
+
             for data in areas_01:
+
                 # Новая логика для двух таблиц
                 group_num = data[3]
                 if group_num is not None:
