@@ -158,18 +158,18 @@ async def set_sex_for_judges(user_id):
         )
         with conn:
             cur = conn.cursor()
-            cur.execute(f"select id, firstName from competition_judges where compId = {active_comp} and gender not in (0, 1, 2)")
+            cur.execute(f"select id, firstName from competition_judges where compId = {active_comp} and gender is NULL")
             judges = cur.fetchall()
 
 
             for jud in judges:
                 name = jud['firstName'].strip()
                 sex = await get_gender(name)
-
-                cur.execute(f"update competition_judges set gender = {sex} where id = {jud['id']}")
-                conn.commit()
+                if sex is not None:
+                    cur.execute(f"update competition_judges set gender = {sex} where id = {jud['id']}")
+                    conn.commit()
     except Exception as e:
-        print(e)
+        print(e, 2)
         return -1
 
 
@@ -302,12 +302,12 @@ async def get_gender(firstName):
             cur.execute(f"select gender from gender_encoder where firstName = '{firstName}'")
             ans = cur.fetchone()
             if ans is None:
-                return 2
+                return None
             else:
                 return ans['gender']
     except Exception as e:
         print(e)
-        return 2
+        return None
 
 async def active_group(compId, groupNumber):
     try:
