@@ -204,7 +204,7 @@ async def check_gender_zgs(user_id, zgs):
                 cur.execute(f"select gender from competition_judges where compId = {active_comp} and ((firstName = '{firstname}' and lastName = '{lastname}') or (firstName2 = '{firstname}' and lastName2 = '{lastname}'))")
                 ans = cur.fetchone()
                 if ans is not None:
-                    if ans['gender'] != 2:
+                    if ans['gender'] is not None:
                         genders.append(ans['gender'])
             genders = set(genders)
             if len(genders) == 1:
