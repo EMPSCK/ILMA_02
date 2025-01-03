@@ -76,15 +76,22 @@ async def pull_to_comp_group_jud(user_id, crew_id, area, have):
             gs = area[1].split(', ')
             zgs = area[2].split(', ')
             lin = area[3].split(', ')
+            gs.sort()
+            zgs.sort()
+            lin.sort()
         elif have_gs == 1 and have_lin == 1 and have_zgs == 0:
             gs = area[1].split(', ')
             lin = area[2].split(', ')
+            gs.sort()
+            lin.sort()
         elif have_zgs == 1 and have_lin == 1 and have_gs == 0:
             zgs = area[1].split(', ')
             lin = area[2].split(', ')
+            zgs.sort()
+            lin.sort()
         elif have_zgs == 0 and have_lin == 1 and have_gs == 0:
             lin = area[1].split(', ')
-
+            lin.sort()
         conn = pymysql.connect(
             host=config.host,
             port=3306,
@@ -262,17 +269,46 @@ async def save_generate_result_to_new_tables(user_id, data):
                 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 lin_id = data[groupnumber]['lin_id']
                 zgs_id = data[groupnumber]['zgs_id']
+                zgs_data = []
+                lin_data = []
 
                 for judIdIndex in range(len(zgs_id)):
                     info = await judgeId_to_name(zgs_id[judIdIndex])
                     lastname = info['lastName']
                     firstname = info['firstName']
                     skateId = info['skateId']
-                    ident = f'ЗГС'
+                    zgs_data.append({'judgeId': zgs_id[judIdIndex], 'lastname':lastname, 'firstname':firstname, 'skateId': skateId})
+
+                zgs_data.sort(key=lambda x: x['lastname'])
+                for jud in zgs_data:
+                    ident = 'ЗГС'
+                    lastname = jud['lastname']
+                    firstname = jud['firstname']
+                    skateId = jud['skateId']
+                    judgeid = jud['judgeId']
                     sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                    cur.execute(sql, (crew_id, 1, ident, lastname, firstname, zgs_id[judIdIndex], skateId))
+                    cur.execute(sql, (crew_id, 1, ident, lastname, firstname, judgeid, skateId))
                     conn.commit()
 
+                for judIdIndex in range(len(lin_id)):
+                    info = await judgeId_to_name(lin_id[judIdIndex])
+                    lastname = info['lastName']
+                    firstname = info['firstName']
+                    skateId = info['skateId']
+                    lin_data.append({'judgeId': lin_id[judIdIndex], 'lastname':lastname, 'firstname':firstname, 'skateId': skateId})
+
+                lin_data.sort(key=lambda x: x['lastname'])
+                for i in range(len(lin_data)):
+                    ident = f'{ALPHABET[i]}({i + 1})'
+                    lastname = lin_data[i]['lastname']
+                    firstname = lin_data[i]['firstname']
+                    skateId = lin_data[i]['skateId']
+                    judgeid = lin_data[i]['judgeId']
+                    sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                    cur.execute(sql, (crew_id, 0, ident, lastname, firstname, judgeid, skateId))
+                    conn.commit()
+
+                '''
                 for judIdIndex in range(len(lin_id)):
                     info = await judgeId_to_name(lin_id[judIdIndex])
                     lastname = info['lastName']
@@ -282,6 +318,8 @@ async def save_generate_result_to_new_tables(user_id, data):
                     sql = "INSERT INTO competition_group_judges (`crewId`, `typeId`, `ident`, `lastName`, `firstName`, `judgeId`, `skateId`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
                     cur.execute(sql, (crew_id, 0, ident, lastname, firstname, lin_id[judIdIndex], skateId))
                     conn.commit()
+                    
+                '''
     except Exception as e:
         print(e)
         return -1
